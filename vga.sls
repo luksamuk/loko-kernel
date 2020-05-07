@@ -6,6 +6,9 @@
 (library (vga)
   (export vga-clear
           vga-clear-line
+          vga-color
+          vga-mix-color
+          vga-set-color!
           vga-newline
           vga-backspace
           vga-putchar
@@ -19,7 +22,8 @@
   (define *vga-pos* 0)
 
   (define *space* #x20)
-  (define *monochrome* #x4f)
+  (define *monochrome* #x0f) ; unused
+  (define *alert* #x4f)      ; unused
 
   ;; Global state elements
   (define *vga-props*
@@ -41,6 +45,44 @@
 
   (define (vga-at pos)
     (+ *vga-ptr* pos))
+
+  ;; Color operations
+  (define *vga-color-set*
+    (make-enumeration
+    '(black
+      blue
+      green
+      cyan
+      red
+      magenta
+      brown
+      light-grey
+      dark-grey
+      light-blue
+      light-green
+      light-cyan
+      light-red
+      light-magenta
+      light-brown
+     white)))
+
+  (define (vga-color c)
+    (let ((indexer (enum-set-indexer *vga-color-set*)))
+      (indexer c)))
+
+  (define (vga-mix-color fg bg)
+    (bitwise-ior
+     fg
+     (bitwise-arithmetic-shift-left bg 4)))
+
+  (define *vga-print-color*
+    (vga-mix-color (vga-color 'white)
+                   (vga-color 'black)))
+
+  (define (vga-set-color! fg bg)
+    (set! *vga-print-color*
+      (vga-mix-color (vga-color fg)
+                      (vga-color bg))))
 
   ;; Raw operations
   (define (vga-clear)
@@ -64,7 +106,7 @@
                     *space*)
         (put-mem-u8 (vga-at
                      (+ line (* i 2) 1))
-                    *monochrome*)
+                    *vga-print-color*)
         (loop (+ i 1)))))
 
   (define (vga-scroll-up)
@@ -86,7 +128,7 @@
               *vga-buf-sz*)
       (vga-scroll-up))
     (put-mem-u8 (vga-at *vga-pos*) c)
-    (put-mem-u8 (vga-at (+ *vga-pos* 1)) *monochrome*)
+    (put-mem-u8 (vga-at (+ *vga-pos* 1)) *vga-print-color*)
     (set! *vga-pos* (+ *vga-pos* 2)))
 
   (define (vga-newline)
@@ -105,7 +147,7 @@
       (set! *vga-pos* (- *vga-pos* 2))
       (put-mem-u8 (vga-at *vga-pos*)     *space*)
       (put-mem-u8 (vga-at (+ *vga-pos* 1))
-                  *monochrome*)))
+                  *vga-print-color*)))
 
   (define (vga-putchar c)
     (case c
@@ -120,6 +162,8 @@
     (cond ((char? elt)
            (vga-putchar
             (char->byte elt)))
+          ((number? elt)
+           (vga-print (number->string elt)))
           ((string? elt)
            (let ((len (string-length elt))
                  (vec (string->bytevector

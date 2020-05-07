@@ -10,15 +10,27 @@
         (vga))
 
 
+(define *version-major* 0)
+(define *version-minor* 0)
+(define *version-rev*   1)
+
+(define (kdebrief)
+  (vga-set-color! 'white 'black)
+  (for-each vga-print
+            (list
+             "Lucas' Toy Kernel v"
+             *version-major* #\. *version-minor* #\. *version-rev*
+             #\linefeed
+             "Copyright (c) 2020 Lucas S. Vieira\n\n"))
+  (vga-set-color! 'white 'red)
+  (vga-print "This software is very alpha!\n\n")
+  (vga-set-color! 'white 'black))
+  
 ;; Entry point
 (define (kmain)
   (vga-clear)
-  (for-each vga-print
-          '("Hello world!\n\n"
-            "This is an example kernel written in Loko Scheme.\n"
-            "Currently, it just prints stuff to VGA output.\n"
-            "This looks dope!\n\n"
-            "I'll hang on an infinite loop now."))
+  (kdebrief)
+  (vga-print "I'm gonna hang now on an infinite loop.")
   (let main-loop ()
     (sleep 1/60)
     (main-loop)))

@@ -2,6 +2,7 @@ LOKO        := /usr/local/bin/loko
 LOKO_SOURCE := /usr/local/lib/loko
 
 PROGRAM     := bin/kernel.bin
+LIBS        := kmem.sls stdlib.sls vga.sls
 
 .PHONY: run clean dirs
 
@@ -10,9 +11,9 @@ all: dirs $(PROGRAM)
 dirs:
 	mkdir -p bin/
 
-$(PROGRAM): kmain.sps
+$(PROGRAM): kmain.sps $(LIBS)
 	LOKO_SOURCE=$(LOKO_SOURCE) \
-	$(LOKO) -ftarget=pc -feval --compile $< --output $@
+	$(LOKO) -ftarget=pc -feval --compile kmain.sps --output $@
 
 run: $(PROGRAM)
 	qemu-system-x86_64 -enable-kvm \
