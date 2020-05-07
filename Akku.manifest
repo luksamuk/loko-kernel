@@ -1,0 +1,7 @@
+#!r6rs ; -*- mode: scheme; coding: utf-8 -*-
+(import (akku format manifest))
+
+(akku-package ("scm-kernel" "0.0.1-alpha.0")
+  (synopsys "Toy bare-metal kernel written in Loko Scheme")
+  (authors "Lucas S. Vieira")
+  (license "MIT"))

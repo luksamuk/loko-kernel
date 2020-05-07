@@ -1,0 +1,28 @@
+#+TITLE: Toy kernel in Scheme
+#+AUTHOR: Lucas S. Vieira
+
+* Overview
+
+This project is an example of a toy kernel, buit atop Loko Scheme.
+
+Loko implements  all the default  features of Scheme R6RS,  plus extra
+goodies to make it able to run on Linux and on bare metal.
+
+- [[https://scheme.fail/][Loko Scheme website]]
+- Loko Scheme code (clone only): https://scheme.fail/git/loko.git
+  - [[https://gitlab.com/weinholt/loko][Gitlab mirror]]
+  - [[https://github.com/weinholt/loko][Github mirror]]
+- [[https://scheme.fail/manual/loko.html][Loko Scheme manual]]
+- [[http://www.r6rs.org/final/r6rs-lib.pdf][R6RS standard library spec]]
+
+* Goals
+
+Right now  the project is  just a port of  code I previously  built in
+plain C. There is no actual purpose to this project other than study.
+
+* License
+
+This project  is distributed  under the MIT  License. See  [[LICENSE]] for
+details.
+
+Copyright © 2020 Lucas S. Vieira.
