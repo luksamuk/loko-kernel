@@ -13,6 +13,7 @@ goodies to make it able to run on Linux and on bare metal.
   - [[https://gitlab.com/weinholt/loko][Gitlab mirror]]
   - [[https://github.com/weinholt/loko][Github mirror]]
 - [[https://scheme.fail/manual/loko.html][Loko Scheme manual]]
+- [[http://www.r6rs.org/final/r6rs.pdf][R6RS spec]]
 - [[http://www.r6rs.org/final/r6rs-lib.pdf][R6RS standard library spec]]
 
 * Goals

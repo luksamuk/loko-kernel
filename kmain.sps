@@ -6,8 +6,8 @@
 (import (rnrs)
         (loko system unsafe)
         (loko system fibers)
-        (stdlib)
-        (vga))
+        (lib stdlib)
+        (lib vga))
 
 
 (define *version-major* 0)
@@ -29,6 +29,7 @@
 ;; Entry point
 (define (kmain)
   (vga-clear)
+  (vga-disable-cursor)
   (kdebrief)
   (vga-print "I'm gonna hang now on an infinite loop.")
   (let main-loop ()

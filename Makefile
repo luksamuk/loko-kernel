@@ -2,7 +2,7 @@ LOKO        := /usr/local/bin/loko
 LOKO_SOURCE := /usr/local/lib/loko
 
 PROGRAM     := bin/kernel.bin
-LIBS        := kmem.sls stdlib.sls vga.sls
+LIBS        := lib/kmem.sls lib/stdlib.sls lib/vga.sls lib/keyboard.sls
 
 .PHONY: run clean dirs
 

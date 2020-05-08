@@ -3,7 +3,7 @@
 ;; Distributed under the MIT License
 #!r6rs
 
-(library (stdlib)
+(library (lib stdlib)
   (export char->byte)
   (import (rnrs))
 

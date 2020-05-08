@@ -3,20 +3,23 @@
 ;; Distributed under the MIT License
 #!r6rs
 
-(library (vga)
+(library (lib vga)
   (export vga-clear
           vga-clear-line
           vga-color
           vga-mix-color
           vga-set-color!
+          vga-enable-cursor
+          vga-disable-cursor
+          vga-update-cursor
           vga-newline
           vga-backspace
           vga-putchar
           vga-print)
   (import (rnrs)
           (loko system unsafe)
-          (stdlib)
-          (kmem))
+          (lib stdlib)
+          (lib kmem))
 
   (define *vga-ptr* #xb8000)
   (define *vga-pos* 0)
@@ -64,7 +67,7 @@
       light-red
       light-magenta
       light-brown
-     white)))
+      white)))
 
   (define (vga-color c)
     (let ((indexer (enum-set-indexer *vga-color-set*)))
@@ -82,7 +85,41 @@
   (define (vga-set-color! fg bg)
     (set! *vga-print-color*
       (vga-mix-color (vga-color fg)
-                      (vga-color bg))))
+                     (vga-color bg))))
+
+  ;; Cursor
+  ;; https://wiki.osdev.org/Text_Mode_Cursor
+  (define (vga-enable-cursor start end)
+    (put-i/o-u8 #x3d4 #x0a)
+    (put-i/o-u8 #x3d5
+                (bitwise-ior
+                 (bitwise-and (get-i/o-u8 #x3d5)
+                              #xc0)
+                 start))
+    (put-i/o-u8 #x3d4 #x0b)
+    (put-i/o-u8 #x3d5
+                (bitwise-ior
+                 (bitwise-and (get-i/o-u8 #x3d5)
+                              #xe0)
+                 end)))
+
+  (define (vga-disable-cursor)
+    (put-i/o-u8 #x3d4 #x0a)
+    (put-i/o-u8 #x3d5 #x20))
+
+  (define (vga-update-cursor-raw pos)
+    (put-i/o-u8 #x3d4 #x0f)
+    (put-i/o-u8 #x3d5 (bitwise-and pos #xff))
+    (put-i/o-u8 #x3d4 #x0e)
+    (put-i/o-u8 #x3d5
+                (bitwise-and
+                 (bitwise-arithmetic-shift-right pos 8)
+                 #xff)))
+  
+  (define (vga-update-cursor x y)
+    (vga-update-cursor-raw
+     (+ (+ (vga-prop 'lines) y)
+        x)))
 
   ;; Raw operations
   (define (vga-clear)
@@ -93,7 +130,8 @@
         (put-mem-u8 (vga-at (+ i 1))
                     #x0f)
         (loop (+ i (vga-prop 'bpc)))))
-    (set! *vga-pos* 0))
+    (set! *vga-pos* 0)
+    (vga-update-cursor-raw *vga-pos*))
 
   (define (vga-clear-line line)
     (when (< line (vga-prop 'lines))
@@ -121,7 +159,8 @@
         (loop (+ i 1))))
     (vga-clear-line 24)
     (set! *vga-pos*
-      (- *vga-pos* *vga-line-sz*)))
+      (- *vga-pos* *vga-line-sz*))
+    (vga-update-cursor-raw *vga-pos*))
 
   (define (vga-putchar-raw c)
     (when (>= (+ *vga-pos* 1)
@@ -129,7 +168,8 @@
       (vga-scroll-up))
     (put-mem-u8 (vga-at *vga-pos*) c)
     (put-mem-u8 (vga-at (+ *vga-pos* 1)) *vga-print-color*)
-    (set! *vga-pos* (+ *vga-pos* 2)))
+    (set! *vga-pos* (+ *vga-pos* 2))
+    (vga-update-cursor-raw *vga-pos*))
 
   (define (vga-newline)
     (let ((line-pos (mod *vga-pos*
@@ -138,13 +178,15 @@
       (set! *vga-pos*
         (+ *vga-pos* (- (* (vga-prop 'cols)
                            (vga-prop 'bpc))
-                        line-pos))))
+                        line-pos)))
+      (vga-update-cursor-raw *vga-pos*))
     (when (>= *vga-pos* *vga-buf-sz*)
       (vga-scroll-up)))
 
   (define (vga-backspace)
     (when (not (= *vga-pos* 0))
       (set! *vga-pos* (- *vga-pos* 2))
+      (vga-update-cursor-raw *vga-pos*)
       (put-mem-u8 (vga-at *vga-pos*)     *space*)
       (put-mem-u8 (vga-at (+ *vga-pos* 1))
                   *vga-print-color*)))

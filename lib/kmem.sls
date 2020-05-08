@@ -3,7 +3,7 @@
 ;; Distributed under the MIT License
 #!r6rs
 
-(library (kmem)
+(library (lib kmem)
   (export kmemcpy
           kmemset)
   (import (rnrs)
